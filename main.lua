@@ -17,7 +17,7 @@ local idemo_list = {}
 for file in lfs.dir("demos") do
 	if (file ~= "." and file ~= "..") then
 		local name = file:match("^(.+)%.?.*$")
-		idemo_list[name] = lfs.attributes("demos/" .. file, "mode")
+		idemo_list[name:lower()] = {lfs.attributes("demos/" .. file, "mode"), name}
 		print(name)
 	end
 end
@@ -25,17 +25,24 @@ end
 while (true) do
 	io.write("\nInput a demo name: ")
 	local input = io.read()
+	local linput = input:lower()
 
-	if (idemo_list[input] == "file") then
-		local file = loadfile("demos/" .. input .. ".lua")
-		file(Coeus)
-		break
-	elseif (idemo_list[input] == "directory") then
-		local file, err = loadfile("demos/" .. input .. "/main.lua")
-		package.path = "demos/" .. input .. "/?.lua;" .. package.path
-		file(Coeus)
-		break
+	if (idemo_list[linput]) then
+		local fixed = idemo_list[linput][2]
+
+		if (idemo_list[linput][1] == "file") then
+			local file = loadfile("demos/" .. fixed .. ".lua")
+			file(Coeus)
+			break
+		elseif (idemo_list[linput][1] == "directory") then
+			local file, err = loadfile("demos/" .. fixed .. "/main.lua")
+			package.path = "demos/" .. fixed .. "/?.lua;" .. package.path
+			file(Coeus)
+			break
+		end
 	elseif (input == "quit") then
 		os.exit()
+	else
+		print("Invalid demo!")
 	end
 end
