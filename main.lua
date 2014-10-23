@@ -1,8 +1,6 @@
 --[[
 Demo Launcher
 Launches demos
-
-Check demos/messy.lua for a (messy) sample app. It relies on the assets folder listed in the GitHub releases for this repository.
 ]]
 
 local ffi = require("ffi")
@@ -31,13 +29,25 @@ while (true) do
 		local fixed = idemo_list[linput][2]
 
 		if (idemo_list[linput][1] == "file") then
-			local file = loadfile("demos/" .. fixed .. ".lua")
+			local file, err = loadfile("demos/" .. fixed)
+
+			if (not file) then
+				error("Error loading demo:", err)
+			end
+
 			file(Coeus)
 			break
 		elseif (idemo_list[linput][1] == "directory") then
 			local file, err = loadfile("demos/" .. fixed .. "/main.lua")
+			local old_path = package.path
 			package.path = "demos/" .. fixed .. "/?.lua;" .. package.path
+
+			if (not file) then
+				error("Error loading demo:", err)
+			end
+
 			file(Coeus)
+			package.path = old_path
 			break
 		end
 	elseif (input == "quit") then
@@ -46,3 +56,5 @@ while (true) do
 		print("Invalid demo!")
 	end
 end
+
+Coeus:Terminate()
